@@ -12,10 +12,19 @@ def handle_item(event, context):
             'statusCode': 400,
             'body': json.dumps({'error': 'Invalid request'})
         }
-    item_id = event['path'].split('/')[-1]
 
+    url = ""
+    query_params = event.get('queryStringParameters', {})
     # Logic for /servicenow/item/<item_id>
-    url = f"{ENVIRONMENT_VARIABLES['API_URL']}/x_rnod_csod_serv_0_service_ops_request/{item_id}"
+    if query_params:
+        item_id = query_params.get('item_id')
+        if item_id:
+            url = f"{ENVIRONMENT_VARIABLES['API_URL']}/task/{item_id}"
+        else:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Invalid request'})
+            }
 
 
     try:

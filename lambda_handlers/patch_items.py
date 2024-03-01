@@ -13,9 +13,19 @@ def handle_patch_item(event, context):
             'statusCode': 400,
             'body': json.dumps({'error': 'Invalid request'})
         }
-    item_id = event['path'].split('/')[-1]
+    url = ""
+    query_params = event.get('queryStringParameters', {})
+    # Logic for /servicenow/item/<item_id>
+    if query_params:
+        item_id = query_params.get('item_id')
+        if item_id:
+            url = f"{ENVIRONMENT_VARIABLES['API_URL']}/task/{item_id}"
+        else:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Invalid request'})
+            }
     patch_data = event['body']
-    url = f"{ENVIRONMENT_VARIABLES['API_URL']}/sysapproval_approver/{item_id}"
 
     try:
         response = requests.patch(
