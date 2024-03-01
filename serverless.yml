@@ -1,0 +1,72 @@
+service: servicenow-api
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.11
+  timeout: 30
+  iam:
+    role:
+      name: servicenow-api-role
+  stage: dev
+  region: us-east-1
+  environment:
+    USERNAME: ${env:USERNAME}
+    PASSWORD: ${env:PASSWORD}
+    API_URL: ${env:API_URL}
+
+
+functions:
+  handleHistory:
+    handler: lambda_handlers/history.handle_history
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    events:
+      - http:
+          path: servicenow/history
+          method: get
+
+  handleItem:
+    handler: lambda_handlers/item.handle_item
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    events:
+      - http:
+          path: servicenow/item/{item_id}
+          method: get
+
+  handleItems:
+    handler: lambda_handlers/items.handle_items
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    events:
+      - http:
+          path: servicenow/items
+          method: get
+
+  handlePatchItem:
+    handler: lambda_handlers/patch_item.handle_patch_item
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    events:
+      - http:
+          path: servicenow/item/{item_id}
+          method: patch
+
+plugins:
+  - serverless-python-requirements
+  - serverless-offline
+
+
+custom:
+  pythonRequirements:
+    layer: true
+
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - package-lock.json
+    - venv/**
+    - .idea/**
